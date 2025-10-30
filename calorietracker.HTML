@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calorie & Macro Tracker</title>
+<style>
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #f0f3f7; 
+    padding: 20px; 
+    margin: 0; 
+  }
+  h1 { 
+    text-align: center; 
+    color: #333; 
+    margin-bottom: 20px; 
+  }
+  label { font-weight: bold; }
+  input, button { 
+    padding: 12px; 
+    margin: 5px 0; 
+    width: 100%; 
+    border-radius: 8px; 
+    border: 1px solid #ccc; 
+    font-size: 16px; 
+    box-sizing: border-box;
+  }
+  button { 
+    background: #4CAF50; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    transition: 0.3s; 
+  }
+  button:hover { background: #45a049; }
+  .meal { 
+    background: #fff; 
+    padding: 15px; 
+    margin: 8px 0; 
+    border-radius: 12px; 
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+  }
+  .totals { 
+    background: #d1f5d3; 
+    padding: 15px; 
+    margin-top: 15px; 
+    border-radius: 12px; 
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1); 
+  }
+  .meal button { 
+    background: #e74c3c; 
+    padding: 6px 10px; 
+    border-radius: 6px; 
+    font-size: 14px; 
+  }
+  .meal button:hover { background: #c0392b; }
+  @media (max-width: 500px) {
+    input, button { font-size: 18px; }
+    .meal { flex-direction: column; align-items: flex-start; }
+    .meal button { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Calorie & Macro Tracker</h1>
+
+<label>Daily Calorie Goal:</label>
+<input type="number" id="calGoal" placeholder="e.g. 4200">
+
+<h3>Add Meal</h3>
+<input type="text" id="mealName" placeholder="Meal name">
+<input type="number" id="mealCals" placeholder="Calories">
+<input type="number" id="mealProtein" placeholder="Protein (g)">
+<input type="number" id="mealCarbs" placeholder="Carbs (g)">
+<input type="number" id="mealFat" placeholder="Fat (g)">
+<button onclick="addMeal()">Add Meal</button>
+
+<h3>Meals Today</h3>
+<div id="mealList"></div>
+
+<div class="totals">
+  <p><strong>Total Calories:</strong> <span id="totalCals">0</span> kcal</p>
+  <p><strong>Total Protein:</strong> <span id="totalProtein">0</span> g</p>
+  <p><strong>Total Carbs:</strong> <span id="totalCarbs">0</span> g</p>
+  <p><strong>Total Fat:</strong> <span id="totalFat">0</span> g</p>
+  <p><strong>Calories Left:</strong> <span id="calsLeft">0</span> kcal</p>
+</div>
+
+<script>
+let meals = [];
+let dailyGoal = 0;
+
+function updateTotals() {
+  let totalCals = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
+  meals.forEach(m => {
+    totalCals += m.cals;
+    totalProtein += m.protein;
+    totalCarbs += m.carbs;
+    totalFat += m.fat;
+  });
+  document.getElementById('totalCals').innerText = totalCals;
+  document.getElementById('totalProtein').innerText = totalProtein;
+  document.getElementById('totalCarbs').innerText = totalCarbs;
+  document.getElementById('totalFat').innerText = totalFat;
+  
+  const calsLeft = Math.max(dailyGoal - totalCals, 0);
+  document.getElementById('calsLeft').innerText = calsLeft;
+  
+  // color change if over/under goal
+  if(totalCals > dailyGoal) {
+    document.getElementById('calsLeft').style.color = '#e74c3c';
+  } else {
+    document.getElementById('calsLeft').style.color = '#27ae60';
+  }
+}
+
+function addMeal() {
+  dailyGoal = parseInt(document.getElementById('calGoal').value) || 0;
+  const name = document.getElementById('mealName').value;
+  const cals = parseInt(document.getElementById('mealCals').value) || 0;
+  const protein = parseInt(document.getElementById('mealProtein').value) || 0;
+  const carbs = parseInt(document.getElementById('mealCarbs').value) || 0;
+  const fat = parseInt(document.getElementById('mealFat').value) || 0;
+
+  if (!name || cals <= 0) { alert("Enter meal name and calories!"); return; }
+
+  meals.push({name, cals, protein, carbs, fat});
+  renderMeals();
+  updateTotals();
+
+  document.getElementById('mealName').value = '';
+  document.getElementById('mealCals').value = '';
+  document.getElementById('mealProtein').value = '';
+  document.getElementById('mealCarbs').value = '';
+  document.getElementById('mealFat').value = '';
+}
+
+function renderMeals() {
+  const listDiv = document.getElementById('mealList');
+  listDiv.innerHTML = '';
+  meals.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.className = 'meal';
+    div.innerHTML = `
+      <div>
+        <strong>${m.name}</strong><br>
+        ${m.cals} kcal | P:${m.protein}g C:${m.carbs}g F:${m.fat}g
+      </div>
+      <button onclick="removeMeal(${i})">Remove</button>
+    `;
+    listDiv.appendChild(div);
+  });
+}
+
+function removeMeal(index) {
+  meals.splice(index, 1);
+  renderMeals();
+  updateTotals();
+}
+</script>
+
+</body>
+</html>
